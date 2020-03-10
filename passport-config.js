@@ -1,21 +1,21 @@
 const bcrypt = require('bcrypt');
 const LocalStrategy = require('passport-local').Strategy;
 
-module.exports = (passport, getUserByEmail, getUserbyId) => {
-  const authenticateUser = async (req, email, password, done) => {
+module.exports = (passport, getUserByEmail, getUserById) => {
+  const authenticateUser = async (email, password, done) => {
     const user = getUserByEmail(email);
     if (user == null) {
-      return done(null, false, { message: 'No user with this email.' });
+      return done(null, false, { message: 'No user with this email' });
     }
 
     try {
       if (await bcrypt.compare(password, user.password)) {
         return done(null, user);
       } else {
-        return done(null, false, { message: 'Password was not correct' });
+        return done(null, false, { message: 'Password incorrect' });
       }
-    } catch (error) {
-      return done(error);
+    } catch (e) {
+      return done(e);
     }
   };
 
@@ -25,9 +25,8 @@ module.exports = (passport, getUserByEmail, getUserbyId) => {
       authenticateUser
     )
   );
-
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser((id, done) => {
-    return done(null, getUserbyId(id));
+    return done(null, getUserById(id));
   });
 };
